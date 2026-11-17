@@ -4,12 +4,42 @@ let pdfFile=null,extractedText="",generatedHTML="";
 function notify(msg){toast.textContent=msg;toast.classList.add("show");clearTimeout(notify.timer);notify.timer=setTimeout(()=>toast.classList.remove("show"),2500)}
 function escapeHTML(value){return value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function setProgress(percent,msg){progressBar.style.width=percent+"%";statusText.textContent=msg}
+function rebuildArabicPage(items){
+ const rows=[];
+ for(const item of items){
+  if(!item.str||!item.str.trim())continue;
+  const x=item.transform?.[4]??0,y=item.transform?.[5]??0,size=Math.abs(item.transform?.[0]||item.transform?.[3]||10);
+  let row=rows.find(r=>Math.abs(r.y-y)<=Math.max(2,size*.28));
+  if(!row){row={y,items:[]};rows.push(row)}
+  row.items.push({str:item.str.trim(),x,width:Math.abs(item.width||0),size});
+ }
+ rows.sort((a,b)=>b.y-a.y);
+ return rows.map(row=>{
+  const line=row.items.sort((a,b)=>b.x-a.x);
+  let result="",previous=null;
+  for(const item of line){
+   if(previous){
+    const gap=previous.x-(item.x+item.width);
+    if(gap>Math.max(1.5,item.size*.22)&&!result.endsWith(" "))result+=" ";
+   }
+   result+=item.str;
+   previous=item;
+  }
+  return result.replace(/[ \\t]+/g," ").trim();
+ }).filter(Boolean).join("\\n");
+}
 async function readPDF(file){
  if(!window.pdfjsLib)throw new Error("تعذر تحميل مكتبة قراءة PDF. تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.");
  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
  const data=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data}).promise;let pages=[];
- for(let n=1;n<=pdf.numPages;n++){const page=await pdf.getPage(n);const content=await page.getTextContent();const text=content.items.map(item=>item.str).join(" ");pages.push(text);setProgress(Math.round(n/pdf.numPages*100),"استخراج نص الصفحة "+n+" من "+pdf.numPages)}
- return {text:pages.join("\n\n"),pages:pdf.numPages};
+ for(let n=1;n<=pdf.numPages;n++){
+  const page=await pdf.getPage(n);
+  const content=await page.getTextContent({disableCombineTextItems:false});
+  const text=rebuildArabicPage(content.items);
+  pages.push(text);
+  setProgress(Math.round(n/pdf.numPages*100),"استخراج نص الصفحة "+n+" من "+pdf.numPages);
+ }
+ return {text:pages.join("\\n\\n"),pages:pdf.numPages};
 }
 function updateReady(){generateBtn.disabled=!(pdfFile&&extractedText.trim()&&promptBox.value.trim())}
 async function acceptFile(file){
