@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020"><meta name="description" content="FA5 AI — حوّل ملفات PDF إلى صفحات دروس HTML موحدة.">
+<title>FA5 AI | منشئ الدروس</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+<a class="brand" href="#"><span class="brand-icon">F<span>5</span></span><span><b>FA5 <i>AI</i></b><small>LESSON STUDIO</small></span></a>
+<div class="side-caption">مساحة العمل</div>
+<a class="nav-item active" href="#"><span>▧</span> منشئ الدروس</a>
+<div class="side-note"><span class="live-dot"></span> نسخة تجريبية</div>
+<div class="sidebar-bottom"><div class="profile"><div class="profile-avatar">F</div><div><b>FA5 Workspace</b><small>PDF → HTML</small></div></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><button id="menuBtn" class="menu-btn" aria-label="القائمة">☰</button><div class="crumb">مساحة العمل <span>/</span> <b>إنشاء درس جديد</b></div><a class="repo-link" href="https://github.com/fkhames819-cloud/Fa5-ai" target="_blank" rel="noreferrer">المستودع ↗</a></header>
+<section class="workspace">
+<div class="heading"><div><div class="eyebrow">FA5 AI · LESSON BUILDER</div><h1>حوّل كتابك إلى <span>درس تفاعلي</span></h1><p>ارفع ملف PDF، حدّد الدرس المطلوب، واحصل على صفحة HTML مستقلة بتصميم موحّد.</p></div><div class="heading-mark">✳</div></div>
+<div class="steps"><div class="step active"><span>1</span> مصدر المحتوى</div><div class="step-line"></div><div class="step"><span>2</span> تفاصيل الدرس</div><div class="step-line"></div><div class="step"><span>3</span> صفحة HTML</div></div>
+<div class="builder-grid">
+<section class="panel source-panel">
+<div class="panel-title"><div class="title-icon">↥</div><div><h2>ملف المصدر</h2><p>ارفع الكتاب أو ملف PDF الذي يحتوي على الدروس</p></div></div>
+<label class="dropzone" id="dropzone" for="pdfFile"><input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden><span class="upload-icon">⇧</span><b>اسحب ملف PDF إلى هنا</b><span>أو اضغط لاختيار ملف من جهازك</span><small>PDF فقط · تتم قراءة النص داخل المتصفح</small></label>
+<div class="file-info" id="fileInfo" hidden><div class="pdf-icon">PDF</div><div class="file-meta"><b id="fileName">اسم الملف</b><small id="fileDetails">جارٍ قراءة الملف...</small></div><button id="removeFile" class="remove-file" title="إزالة الملف">×</button></div>
+<div class="extract-status" id="extractStatus" hidden><div class="progress-track"><span id="progressBar"></span></div><small id="statusText">جارٍ استخراج النص...</small></div>
+<div class="field"><label for="lessonPrompt">ماذا تريد أن تنشئ؟</label><textarea id="lessonPrompt" rows="3" placeholder="مثال: أنشئ الدرس الأول من الوحدة الأولى في مادة البرمجة، مع شرح مبسط وأهداف التعلم وأسئلة للمراجعة."></textarea><div class="field-hint">اكتب طلبك بوضوح، وحدد الوحدة والدرس والمادة.</div></div>
+<div class="options-row"><label class="check-label"><input type="checkbox" id="includeQuestions" checked> أضف أسئلة للمراجعة</label><label class="check-label"><input type="checkbox" id="includeSummary" checked> أضف ملخص الدرس</label></div>
+<button class="primary-btn" id="generateBtn" disabled><span>✦</span> إنشاء صفحة الدرس <span class="btn-arrow">←</span></button>
+<p class="privacy-note">ملفك يُقرأ محليًا في المتصفح في هذه النسخة التجريبية.</p>
+</section>
+<section class="panel output-panel">
+<div class="panel-title"><div class="title-icon purple">▤</div><div><h2>معاينة الناتج</h2><p>ستظهر هنا صفحة الدرس بعد الإنشاء</p></div><span class="html-tag">HTML</span></div>
+<div class="empty-output" id="emptyOutput"><div class="empty-illustration"><div class="paper paper-back"></div><div class="paper"><span>&lt;/&gt;</span><i></i><i></i><i></i></div><div class="spark">✦</div></div><b>صفحتك التعليمية ستظهر هنا</b><span>ارفع ملف PDF واكتب وصف الدرس للبدء.</span></div>
+<div class="result-area" id="resultArea" hidden><div class="result-top"><div><span class="result-dot"></span><b>تم تجهيز مسودة HTML</b></div><span id="resultWordCount">0 كلمة مستخرجة</span></div><div class="preview-frame"><iframe id="previewFrame" title="معاينة صفحة الدرس" sandbox=""></iframe></div><div class="result-actions"><button class="secondary-btn" id="copyBtn">نسخ كود HTML</button><button class="primary-btn small-btn" id="downloadBtn">تنزيل ملف HTML ↓</button></div></div>
+</section>
+</div>
+<div class="notice"><span>ⓘ</span><div><b>معلومة عن النسخة الحالية</b><p>هذه بداية المشروع: استخراج نص PDF وتجهيز قالب HTML مدمج. تحويل النص إلى شرح تعليمي ذكي حسب طلبك سيُفعّل بعد ربط نموذج AI من خلال Backend آمن.</p></div></div>
+</section>
+<footer class="footer"><span>FA5 AI</span> · صُمم لإنشاء محتوى تعليمي منظم</footer>
+</main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="assets/js/app.js"></script>
+</body></html>
