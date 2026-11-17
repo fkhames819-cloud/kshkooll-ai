@@ -55,48 +55,46 @@ fileInput.addEventListener("change",e=>acceptFile(e.target.files[0]));
 dropzone.addEventListener("drop",e=>acceptFile(e.dataTransfer.files[0]));
 $("removeFile").addEventListener("click",()=>{pdfFile=null;extractedText="";fileInput.value="";fileInfo.hidden=true;statusBox.hidden=true;updateReady()});
 promptBox.addEventListener("input",updateReady);
-function makeLessonHTML(){
- const request=promptBox.value.trim();
- const rawLines=extractedText.replace(/\r/g,"").split("\n").map(s=>s.trim()).filter(Boolean);
- const titleMatch=extractedText.match(/الدرس\s*[0-9٠-٩-]*\s*[^\n]*/);
- const title=titleMatch?titleMatch[0].slice(0,120):request||"شرح الدرس";
- const headingPattern=/^(الدرس|الوحدة|أهداف التعلم|أهداف الدرس|مقدمة|تمهيد|أولاً|ثانياً|ثالثاً|رابعاً|خامساً|الخلاصة|ملحوظة|ملاحظة|مثال|تدريب|تطبيق|[0-9٠-٩]+[.)-])/;
- const bulletPattern=/^([•●▪◦*-]|\d+[.)-]|[٠-٩]+[.)-])/;
- let blocks=[],paragraph=[];
- const flush=()=>{if(paragraph.length){blocks.push({type:"p",text:paragraph.join(" ")});paragraph=[]}};
- for(const line of rawLines){
-  if(headingPattern.test(line)){flush();blocks.push({type:"h",text:line});}
-  else if(bulletPattern.test(line)){flush();blocks.push({type:"li",text:line.replace(/^([•●▪◦*-]|\d+[.)-]|[٠-٩]+[.)-])\s*/,"")});}
-  else paragraph.push(line);
- }
- flush();
- const content=blocks.map((block,i)=>{
-  if(block.type==="h")return '<h2 class="section-title">'+escapeHTML(block.text)+'</h2>';
-  if(block.type==="li")return '<div class="note-list-item"><span>•</span><p>'+escapeHTML(block.text)+'</p></div>';
-  return '<p class="lesson-paragraph">'+escapeHTML(block.text)+'</p>';
+function makeLessonHTML(lesson){
+ const title=lesson.title||"شرح الدرس";
+ const sections=lesson.sections.map(section=>{
+  const heading=section.heading?'<h2 class="section-title">'+escapeHTML(section.heading)+'</h2>':"";
+  const paragraphs=(section.paragraphs||[]).map(p=>'<p class="lesson-paragraph">'+escapeHTML(p)+'</p>').join("");
+  const bullets=(section.bullets||[]).map(item=>'<div class="note-list-item"><span>•</span><p>'+escapeHTML(item)+'</p></div>').join("");
+  return heading+paragraphs+bullets;
  }).join("");
  return `<!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#fffdf5;--grid:#e2ebf3;--red:#ff8585;--blue:#2b4c7e;--ink:#2c3e50;--yellow:#fff9c4;--pale-blue:#e1f5fe}
+:root{--paper:#fffdf5;--grid:#e2ebf3;--red:#ff8585;--blue:#2b4c7e;--ink:#2c3e50}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:#dcd6cd;color:var(--ink);font:18px/1.9 "Baloo Bhaijaan 2",Tahoma,sans-serif}
 .notebook{max-width:950px;margin:0 auto;padding:34px 34px 42px;background-color:var(--paper);background-image:linear-gradient(var(--red) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:100% 34px,34px 100%;border-right:20px solid var(--blue);border-radius:9px;box-shadow:0 10px 30px #0002}
 .header{text-align:center;border-bottom:3px double var(--blue);padding:0 0 18px;margin-bottom:28px}.header h1{margin:0;color:var(--blue);font-size:clamp(25px,4vw,34px);font-weight:800;line-height:1.5}.header p{margin:5px 0 0;color:#687386;font-size:16px}
-.lesson-content{display:block}.section-title{display:table;color:var(--blue);font-size:23px;font-weight:800;margin:25px 0 12px;padding-bottom:3px;border-bottom:2px dashed var(--blue)}
+.section-title{display:table;color:var(--blue);font-size:23px;font-weight:800;margin:25px 0 12px;padding-bottom:3px;border-bottom:2px dashed var(--blue)}
 .lesson-paragraph,.note-list-item{margin:0 0 13px}.lesson-paragraph{padding:3px 2px}.note-list-item{display:flex;gap:10px;align-items:flex-start;padding:3px 5px}.note-list-item span{color:#d9381e;font-weight:800}.note-list-item p{margin:0}
-.section-title:nth-of-type(even){color:#246a8b}
 .footer{text-align:center;border-top:2px dashed #aab5c5;margin-top:30px;padding-top:14px;color:#66758a;font-size:13px}
 @media(max-width:600px){body{padding:8px;font-size:16px}.notebook{padding:22px 16px;border-right-width:10px}.section-title{font-size:20px}}
 @media print{body{background:white;padding:0}.notebook{box-shadow:none;margin:0;max-width:none}}
-</style></head><body><main class="notebook"><header class="header"><h1>${escapeHTML(title)}</h1><p>شرح الدرس</p></header><article class="lesson-content">${content}</article><footer class="footer">Kshkooll AI · شرح تعليمي</footer></main></body></html>`;
+</style></head><body><main class="notebook"><header class="header"><h1>${escapeHTML(title)}</h1><p>${escapeHTML(lesson.subtitle||"شرح الدرس")}</p></header><article class="lesson-content">${sections}</article><footer class="footer">Kshkooll AI · شرح تعليمي</footer></main></body></html>`;
 }
-generateBtn.addEventListener("click",()=>{
- if(!extractedText.trim()||!promptBox.value.trim())return;
- generatedHTML=makeLessonHTML();emptyOutput.hidden=true;resultArea.hidden=false;
- previewFrame.srcdoc=generatedHTML;
- $("resultWordCount").textContent=extractedText.trim().split(/\s+/).length+" كلمة مستخرجة";
- notify("تم تجهيز مسودة صفحة HTML");
+
+generateBtn.addEventListener("click",async()=>{
+ if(!extractedText.trim()||!promptBox.value.trim()||generateBtn.disabled)return;
+ const originalLabel=generateBtn.textContent;
+ generateBtn.disabled=true;generateBtn.textContent="جارٍ إنشاء الشرح بالذكاء الاصطناعي...";
+ statusBox.hidden=false;setProgress(35,"يرسل الموقع محتوى الدرس إلى Gemini...");
+ try{
+  const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:extractedText,prompt:promptBox.value.trim()})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||"حدث خطأ أثناء إنشاء الدرس.");
+  if(!data.lesson)throw new Error("لم تصل نتيجة صالحة من Gemini.");
+  generatedHTML=makeLessonHTML(data.lesson);
+  emptyOutput.hidden=true;resultArea.hidden=false;previewFrame.srcdoc=generatedHTML;
+  $("resultWordCount").textContent=JSON.stringify(data.lesson).trim().split(/\s+/).length+" كلمة في الشرح";
+  setProgress(100,"اكتمل إنشاء الدرس بواسطة Gemini");notify("تم إنشاء الدرس بنجاح");
+ }catch(err){notify(err.message);setProgress(0,"تعذر إنشاء الدرس")}
+ finally{generateBtn.textContent=originalLabel;updateReady()}
 });
 $("copyBtn").addEventListener("click",async()=>{if(!generatedHTML)return;try{await navigator.clipboard.writeText(generatedHTML);notify("تم نسخ كود HTML")}catch{notify("تعذر النسخ؛ استخدم التنزيل") }});
 $("downloadBtn").addEventListener("click",()=>{if(!generatedHTML)return;const blob=new Blob([generatedHTML],{type:"text/html;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="FA5-AI-lesson.html";a.click();URL.revokeObjectURL(url);notify("بدأ تنزيل ملف HTML")});
