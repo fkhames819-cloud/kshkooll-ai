@@ -56,23 +56,40 @@ dropzone.addEventListener("drop",e=>acceptFile(e.dataTransfer.files[0]));
 $("removeFile").addEventListener("click",()=>{pdfFile=null;extractedText="";fileInput.value="";fileInfo.hidden=true;statusBox.hidden=true;updateReady()});
 promptBox.addEventListener("input",updateReady);
 function makeLessonHTML(){
- const request=escapeHTML(promptBox.value.trim());
- const source=escapeHTML(extractedText);
- const titleMatch=extractedText.match(/الدرس\s*[0-9٠-٩-]*\s*([\s\S]{0,100})/);
- const title=titleMatch?titleMatch[0].replace(/\s+/g," ").slice(0,90):"الدرس التعليمي";
- const summary=extractedText.split(/[.؟!\n]/).map(s=>s.trim()).filter(s=>s.length>35).slice(0,7);
- const includeSummary=$("includeSummary").checked,includeQuestions=$("includeQuestions").checked;
- const paragraphs=summary.map(s=>"<p>"+escapeHTML(s)+"</p>").join("");
- const questions=includeQuestions?'<section class="card"><h2>اختبر فهمك</h2><p>راجع الأفكار الأساسية في الدرس، ثم أجب عن الأسئلة التالية:</p><ol><li>ما الفكرة الرئيسية التي يعرضها الدرس؟</li><li>اذكر مفهومين أساسيين وردا في المحتوى.</li><li>اشرح مثالًا أو تطبيقًا من الدرس بأسلوبك.</li></ol></section>':"";
- const summarySection=includeSummary?'<section class="card"><h2>ملخص سريع</h2>'+paragraphs+'</section>':"";
+ const request=promptBox.value.trim();
+ const rawLines=extractedText.replace(/\r/g,"").split("\n").map(s=>s.trim()).filter(Boolean);
+ const titleMatch=extractedText.match(/الدرس\s*[0-9٠-٩-]*\s*[^\n]*/);
+ const title=titleMatch?titleMatch[0].slice(0,120):request||"شرح الدرس";
+ const headingPattern=/^(الدرس|الوحدة|أهداف التعلم|أهداف الدرس|مقدمة|تمهيد|أولاً|ثانياً|ثالثاً|رابعاً|خامساً|الخلاصة|ملحوظة|ملاحظة|مثال|تدريب|تطبيق|[0-9٠-٩]+[.)-])/;
+ const bulletPattern=/^([•●▪◦*-]|\d+[.)-]|[٠-٩]+[.)-])/;
+ let blocks=[],paragraph=[];
+ const flush=()=>{if(paragraph.length){blocks.push({type:"p",text:paragraph.join(" ")});paragraph=[]}};
+ for(const line of rawLines){
+  if(headingPattern.test(line)){flush();blocks.push({type:"h",text:line});}
+  else if(bulletPattern.test(line)){flush();blocks.push({type:"li",text:line.replace(/^([•●▪◦*-]|\d+[.)-]|[٠-٩]+[.)-])\s*/,"")});}
+  else paragraph.push(line);
+ }
+ flush();
+ const content=blocks.map((block,i)=>{
+  if(block.type==="h")return '<h2 class="section-title">'+escapeHTML(block.text)+'</h2>';
+  if(block.type==="li")return '<div class="note-list-item"><span>•</span><p>'+escapeHTML(block.text)+'</p></div>';
+  return '<p class="lesson-paragraph">'+escapeHTML(block.text)+'</p>';
+ }).join("");
  return `<!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)}</title><style>
-:root{--ink:#17233b;--muted:#60708a;--accent:#6358c9;--soft:#f2f3ff;--line:#e1e6f0}*{box-sizing:border-box}body{margin:0;background:#f4f6fb;color:var(--ink);font-family:Tahoma,Arial,sans-serif;line-height:1.95}.page{max-width:920px;margin:35px auto;padding:0 20px}.hero{padding:38px 34px;border-radius:22px;background:linear-gradient(125deg,#171e3a,#393b79 62%,#367c83);color:white;position:relative;overflow:hidden}.tag{font-size:12px;color:#b8fff4;letter-spacing:1px}.hero h1{font-size:clamp(25px,4vw,38px);line-height:1.5;margin:12px 0}.hero p{color:#d9e0f3;margin:0}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.meta span{font-size:11px;background:#ffffff1c;border:1px solid #ffffff30;border-radius:20px;padding:4px 12px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:23px 26px;margin:18px 0;box-shadow:0 7px 25px #24365a09}.card h2{font-size:20px;margin:0 0 13px;color:var(--accent)}.card p{margin:8px 0}.goals li,.card li{padding:4px 0}.source{background:#f7f8fc;border-right:4px solid var(--accent);padding:15px 18px;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}@media print{body{background:white}.page{margin:0 auto}.card{break-inside:avoid;box-shadow:none}}
-</style></head><body><main class="page"><header class="hero"><div class="tag">FA5 AI · درس تعليمي</div><h1>${escapeHTML(title)}</h1><p>مسودة أولية مبنية على ملف المصدر المرفوع.</p><div class="meta"><span>طلب الإنشاء: ${request}</span><span>محتوى مستخرج من PDF</span></div></header>
-<section class="card"><h2>طلب الدرس</h2><p>${request}</p></section>
-${summarySection}
-<section class="card"><h2>محتوى المصدر المستخرج</h2><div class="source">${source}</div></section>
-${questions}<footer class="footer">تم إنشاء هذه الصفحة باستخدام FA5 AI · يمكنك تعديل ملف HTML بحرية</footer></main></body></html>`;
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHTML(title)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fffdf5;--grid:#e2ebf3;--red:#ff8585;--blue:#2b4c7e;--ink:#2c3e50;--yellow:#fff9c4;--pale-blue:#e1f5fe}
+*{box-sizing:border-box}body{margin:0;padding:22px;background:#dcd6cd;color:var(--ink);font:18px/1.9 "Baloo Bhaijaan 2",Tahoma,sans-serif}
+.notebook{max-width:950px;margin:0 auto;padding:34px 34px 42px;background-color:var(--paper);background-image:linear-gradient(var(--red) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:100% 34px,34px 100%;border-right:20px solid var(--blue);border-radius:9px;box-shadow:0 10px 30px #0002}
+.header{text-align:center;border-bottom:3px double var(--blue);padding:0 0 18px;margin-bottom:28px}.header h1{margin:0;color:var(--blue);font-size:clamp(25px,4vw,34px);font-weight:800;line-height:1.5}.header p{margin:5px 0 0;color:#687386;font-size:16px}
+.lesson-content{display:block}.section-title{display:table;color:var(--blue);font-size:23px;font-weight:800;margin:25px 0 12px;padding-bottom:3px;border-bottom:2px dashed var(--blue)}
+.lesson-paragraph,.note-list-item{margin:0 0 13px}.lesson-paragraph{padding:3px 2px}.note-list-item{display:flex;gap:10px;align-items:flex-start;padding:3px 5px}.note-list-item span{color:#d9381e;font-weight:800}.note-list-item p{margin:0}
+.section-title:nth-of-type(even){color:#246a8b}
+.footer{text-align:center;border-top:2px dashed #aab5c5;margin-top:30px;padding-top:14px;color:#66758a;font-size:13px}
+@media(max-width:600px){body{padding:8px;font-size:16px}.notebook{padding:22px 16px;border-right-width:10px}.section-title{font-size:20px}}
+@media print{body{background:white;padding:0}.notebook{box-shadow:none;margin:0;max-width:none}}
+</style></head><body><main class="notebook"><header class="header"><h1>${escapeHTML(title)}</h1><p>شرح الدرس</p></header><article class="lesson-content">${content}</article><footer class="footer">FA5 AI · شرح تعليمي</footer></main></body></html>`;
 }
 generateBtn.addEventListener("click",()=>{
  if(!extractedText.trim()||!promptBox.value.trim())return;
