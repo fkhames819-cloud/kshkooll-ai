@@ -25,8 +25,8 @@ function rebuildArabicPage(items){
    result+=item.str;
    previous=item;
   }
-  return result.replace(/[ \\t]+/g," ").trim();
- }).filter(Boolean).join("\\n");
+  return result.replace(/[ \t]+/g," ").trim();
+ }).filter(Boolean).join("\n");
 }
 async function readPDF(file){
  if(!window.pdfjsLib)throw new Error("تعذر تحميل مكتبة قراءة PDF. تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.");
@@ -39,7 +39,7 @@ async function readPDF(file){
   pages.push(text);
   setProgress(Math.round(n/pdf.numPages*100),"استخراج نص الصفحة "+n+" من "+pdf.numPages);
  }
- return {text:pages.join("\\n\\n"),pages:pdf.numPages};
+ return {text:pages.join("\n\n"),pages:pdf.numPages};
 }
 function updateReady(){generateBtn.disabled=!(pdfFile&&extractedText.trim()&&promptBox.value.trim())}
 async function acceptFile(file){
