@@ -32,7 +32,7 @@
 <div class="field"><label for="lessonPrompt">ماذا تريد أن تنشئ؟</label><textarea id="lessonPrompt" rows="3" placeholder="مثال: أنشئ شرح الدرس الأول من الوحدة الأولى في مادة البرمجة."></textarea><div class="field-hint">اكتب طلبك بوضوح، وحدد الوحدة والدرس والمادة.</div></div>
 
 <button class="primary-btn" id="generateBtn" disabled><span>✦</span> إنشاء صفحة الدرس <span class="btn-arrow">←</span></button>
-<p class="privacy-note">ملفك يُقرأ محليًا في المتصفح في هذه النسخة التجريبية.</p>
+<p class="privacy-note">يُقرأ ملفك في المتصفح، ثم يُرسل النص إلى Gemini عبر اتصال آمن لمعالجة الدرس.</p>
 </section>
 <section class="panel output-panel">
 <div class="panel-title"><div class="title-icon purple">▤</div><div><h2>معاينة الناتج</h2><p>ستظهر هنا صفحة الدرس بعد الإنشاء</p></div><span class="html-tag">HTML</span></div>
@@ -40,7 +40,7 @@
 <div class="result-area" id="resultArea" hidden><div class="result-top"><div><span class="result-dot"></span><b>تم تجهيز مسودة HTML</b></div><span id="resultWordCount">0 كلمة مستخرجة</span></div><div class="preview-frame"><iframe id="previewFrame" title="معاينة صفحة الدرس" sandbox=""></iframe></div><div class="result-actions"><button class="secondary-btn" id="copyBtn">نسخ كود HTML</button><button class="primary-btn small-btn" id="downloadBtn">تنزيل ملف HTML ↓</button></div></div>
 </section>
 </div>
-<div class="notice"><span>ⓘ</span><div><b>معلومة عن النسخة الحالية</b><p>هذه بداية المشروع: استخراج نص PDF وتجهيز قالب HTML مدمج. تحويل النص إلى شرح تعليمي ذكي حسب طلبك سيُفعّل بعد ربط نموذج AI من خلال Backend آمن.</p></div></div>
+<div class="notice"><span>ⓘ</span><div><b>معلومة عن النسخة الحالية</b><p>يستخدم Kshkooll AI نموذج Gemini لتنظيم محتوى الدرس وشرحه، ثم ينشئ ملف HTML مستقلًا بتصميم موحّد. لا تُضف أسئلة أو تدريبات إلى الناتج.</p></div></div>
 </section>
 <footer class="footer"><span>Kshkooll AI</span> · صُمم لإنشاء محتوى تعليمي منظم</footer>
 </main>
