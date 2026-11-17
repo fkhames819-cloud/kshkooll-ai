@@ -1,4 +1,4 @@
-# FA5 AI — Lesson Builder
+# Kshkooll AI — Lesson Builder
 
 واجهة عربية لإنشاء صفحات دروس HTML مدمجة انطلاقًا من ملفات PDF.
 
@@ -21,7 +21,7 @@
 
 ## هيكل الملفات
 ```
-Fa5-ai/
+kshkooll-ai/
 ├── index.html
 ├── README.md
 └── assets/
