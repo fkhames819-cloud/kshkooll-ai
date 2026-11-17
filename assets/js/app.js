@@ -89,7 +89,7 @@ function makeLessonHTML(){
 .footer{text-align:center;border-top:2px dashed #aab5c5;margin-top:30px;padding-top:14px;color:#66758a;font-size:13px}
 @media(max-width:600px){body{padding:8px;font-size:16px}.notebook{padding:22px 16px;border-right-width:10px}.section-title{font-size:20px}}
 @media print{body{background:white;padding:0}.notebook{box-shadow:none;margin:0;max-width:none}}
-</style></head><body><main class="notebook"><header class="header"><h1>${escapeHTML(title)}</h1><p>شرح الدرس</p></header><article class="lesson-content">${content}</article><footer class="footer">FA5 AI · شرح تعليمي</footer></main></body></html>`;
+</style></head><body><main class="notebook"><header class="header"><h1>${escapeHTML(title)}</h1><p>شرح الدرس</p></header><article class="lesson-content">${content}</article><footer class="footer">Kshkooll AI · شرح تعليمي</footer></main></body></html>`;
 }
 generateBtn.addEventListener("click",()=>{
  if(!extractedText.trim()||!promptBox.value.trim())return;
