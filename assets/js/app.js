@@ -1,3 +1,4 @@
+const API_ENDPOINT = window.KSHKOOLL_API_URL || "";
 const $=id=>document.getElementById(id);
 const fileInput=$("pdfFile"),dropzone=$("dropzone"),fileInfo=$("fileInfo"),fileName=$("fileName"),fileDetails=$("fileDetails"),statusBox=$("extractStatus"),statusText=$("statusText"),progressBar=$("progressBar"),promptBox=$("lessonPrompt"),generateBtn=$("generateBtn"),emptyOutput=$("emptyOutput"),resultArea=$("resultArea"),previewFrame=$("previewFrame"),toast=$("toast");
 let pdfFile=null,extractedText="",generatedHTML="";
@@ -81,11 +82,12 @@ function makeLessonHTML(lesson){
 
 generateBtn.addEventListener("click",async()=>{
  if(!extractedText.trim()||!promptBox.value.trim()||generateBtn.disabled)return;
+ if(!API_ENDPOINT){notify("أضف رابط Gemini Worker في assets/js/config.js أولًا.");return;}
  const originalLabel=generateBtn.textContent;
  generateBtn.disabled=true;generateBtn.textContent="جارٍ إنشاء الشرح بالذكاء الاصطناعي...";
  statusBox.hidden=false;setProgress(35,"يرسل الموقع محتوى الدرس إلى Gemini...");
  try{
-  const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:extractedText,prompt:promptBox.value.trim()})});
+  const response=await fetch(API_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:extractedText,prompt:promptBox.value.trim()})});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||"حدث خطأ أثناء إنشاء الدرس.");
   if(!data.lesson)throw new Error("لم تصل نتيجة صالحة من Gemini.");
